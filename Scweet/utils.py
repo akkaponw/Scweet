@@ -123,7 +123,7 @@ def init_driver(headless=True, proxy=None, show_images=False, option=None):
     """
 
     # create instance of web driver
-    chromedriver_path = chromedriver_autoinstaller.install()
+    # chromedriver_path = chromedriver_autoinstaller.install()
     # options
     options = Options()
     if headless is True:
@@ -141,14 +141,19 @@ def init_driver(headless=True, proxy=None, show_images=False, option=None):
         options.add_experimental_option("prefs", prefs)
     if option is not None:
         options.add_argument(option)
-    driver = webdriver.Chrome(options=options, executable_path=chromedriver_path)
+    # options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    driver = webdriver.Chrome('chromedriver', options=options)
+    #driver = webdriver.Chrome('chromedriver', options=options, executable_path=chromedriver_path)
     driver.set_page_load_timeout(100)
     return driver
 
 
 def log_search_page(driver, since, until_local, lang, display_type, words, to_account, from_account, mention_account,
                     hashtag, filter_replies, proximity,
-                    geocode, minreplies, minlikes, minretweets):
+                    geocode, minreplies, minlikes, minretweets, searchprofile):
     """ Search for this query between since and until_local"""
     # format the <from_account>, <to_account> and <hash_tags>
     from_account = "(from%3A" + from_account + ")%20" if from_account is not None else ""
@@ -210,8 +215,10 @@ def log_search_page(driver, since, until_local, lang, display_type, words, to_ac
         proximity = "&lf=on"  # at the end
     else:
         proximity = ""
-
-    path = 'https://twitter.com/search?q=' + words + from_account + to_account + mention_account + hash_tags + until_local + since + lang + filter_replies + geocode + minreplies + minlikes + minretweets + '&src=typed_query' + display_type + proximity
+    if searchprofile:
+      path = 'https://twitter.com/search?q=' + words + from_account + to_account + mention_account + hash_tags + lang + filter_replies + geocode + minreplies + minlikes + minretweets + '&src=typed_query' + display_type + proximity
+    else:
+      path = 'https://twitter.com/search?q=' + words + from_account + to_account + mention_account + hash_tags + until_local + since + lang + filter_replies + geocode + minreplies + minlikes + minretweets + '&src=typed_query' + display_type + proximity
     driver.get(path)
     return path
 
