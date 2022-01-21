@@ -174,8 +174,12 @@ def log_search_page(driver, since, until_local, lang, display_type, words, to_ac
     else:
         lang = ""
 
-    until_local = "until%3A" + until_local + "%20"
-    since = "since%3A" + since + "%20"
+    if since is not None:
+      until_local = "until%3A" + until_local + "%20"
+      since = "since%3A" + since + "%20"
+    else:
+      until_local = ""
+      since = ""
 
     if display_type == "Latest" or display_type == "latest":
         display_type = "&f=live"
@@ -216,7 +220,7 @@ def log_search_page(driver, since, until_local, lang, display_type, words, to_ac
     else:
         proximity = ""
     if searchprofile:
-      path = 'https://twitter.com/search?q=' + words + from_account + to_account + mention_account + hash_tags + lang + filter_replies + geocode + minreplies + minlikes + minretweets + '&src=typed_query' + display_type + proximity
+      path = 'https://twitter.com/search?q=' + words + from_account + to_account + mention_account + hash_tags + until_local + since + lang + filter_replies + geocode + minreplies + minlikes + minretweets + '&src=typed_query' + display_type + proximity
     else:
       path = 'https://twitter.com/search?q=' + words + from_account + to_account + mention_account + hash_tags + until_local + since + lang + filter_replies + geocode + minreplies + minlikes + minretweets + '&src=typed_query' + display_type + proximity
     driver.get(path)
