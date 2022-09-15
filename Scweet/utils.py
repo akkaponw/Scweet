@@ -178,7 +178,7 @@ def log_search_page(driver, since, until_local, lang, display_type, words, to_ac
       until_local = "until%3A" + until_local + "%20"
       since = "since%3A" + since + "%20"
     else:
-      until_local = ""
+      until_local = "until%3A" + until_local + "%20"
       since = ""
 
     if display_type == "Latest" or display_type == "latest":
