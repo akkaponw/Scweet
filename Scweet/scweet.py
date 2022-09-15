@@ -35,8 +35,10 @@ def scrape(since=None, until=None, words=None, to_account=None, from_account=Non
     write_mode = 'w'
     # start scraping from <since> until <until>
     # add the <interval> to <since> to get <until_local> for the first refresh
-    if since is None:
-      until_local = datetime.date.today().strftime("%Y-%m-%d")
+    if since is None and until is not None:
+      until_local = datetime.datetime.strptime(until, '%Y-%m-%d')
+    elif since is None:
+      until_local = datetime.datetime.strptime(datetime.date.today().strftime("%Y-%m-%d"), '%Y-%m-%d')
     else:
       until_local = datetime.datetime.strptime(since, '%Y-%m-%d') + datetime.timedelta(days=interval)
 
@@ -118,6 +120,40 @@ def scrape(since=None, until=None, words=None, to_account=None, from_account=Non
           # start scrolling and get tweets
           driver, data, writer, tweet_ids, scrolling, tweet_parsed, scroll, last_position = \
               keep_scroling(driver, data, writer, tweet_ids, scrolling, tweet_parsed, limit, scroll, last_position)
+        elif since is None:
+          # number of scrolls
+          scroll = 0
+          # convert <since> and <until_local> to str
+          if type(since) != str and since is not None:
+              since = datetime.datetime.strftime(since, '%Y-%m-%d')
+          if type(until_local) != str :
+              until_local = datetime.datetime.strftime(until_local, '%Y-%m-%d')
+          # log search page between <since> and <until_local>
+          print(since)
+          print(until_local)
+          path = log_search_page(driver=driver, words=words, since=since,
+                          until_local=until_local, to_account=to_account,
+                          from_account=from_account, mention_account=mention_account, hashtag=hashtag, lang=lang, 
+                          display_type=display_type, filter_replies=filter_replies, proximity=proximity,
+                          geocode=geocode, minreplies=minreplies, minlikes=minlikes, minretweets=minretweets, searchprofile=searchprofile)
+          # number of logged pages (refresh each <interval>)
+          refresh += 1
+          # number of days crossed
+          #days_passed = refresh * interval
+          # last position of the page : the purpose for this is to know if we reached the end of the page or not so
+          # that we refresh for another <since> and <until_local>
+          last_position = driver.execute_script("return window.pageYOffset;")
+          # should we keep scrolling ?
+          scrolling = True
+          print("looking for tweets between " + str(since) + " and " + str(until_local) + " ...")
+          print(" path : {}".format(path))
+          # number of tweets parsed
+          tweet_parsed = 0
+          # sleep 
+          sleep(random.uniform(0.5, 1.5))
+          # start scrolling and get tweets
+          driver, data, writer, tweet_ids, scrolling, tweet_parsed, scroll, last_position = \
+              keep_scroling(driver, data, writer, tweet_ids, scrolling, tweet_parsed, limit, scroll, last_position)
         elif searchprofile and since is not None:        
           while until_local <= datetime.datetime.strptime(until, '%Y-%m-%d'):
             # number of scrolls
@@ -161,7 +197,7 @@ def scrape(since=None, until=None, words=None, to_account=None, from_account=Non
                 until_local = datetime.datetime.strptime(until_local, '%Y-%m-%d') + datetime.timedelta(days=interval)
             else:
                 until_local = until_local + datetime.timedelta(days=interval)
-        else:        
+        else:
           while until_local <= datetime.datetime.strptime(until, '%Y-%m-%d'):
             # number of scrolls
             scroll = 0
